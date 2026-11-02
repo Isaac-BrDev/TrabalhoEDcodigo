@@ -5,7 +5,7 @@ public class Banco {
 
     // Metodo pra add cliente
     public void addClient(Cliente c){
-
+        Cliente cliente = c;
     }
 
     //Metodo pra remover cliente
