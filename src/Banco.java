@@ -1,11 +1,25 @@
 import java.time.LocalDate;
+import java.util.ArrayList;
 
 public class Banco {
-    private String name;
+    private String nome;
+    private ArrayList<Cliente> clientes;
+
+    public Banco(String nome) {
+        this.nome = nome;
+        this.clientes = new ArrayList<>();
+    }
 
     // Metodo pra add cliente
+    //Ele adiciona clientes a bancos, usando outro metodo como condição para saber se tal cliente/CPF tem "cadastro" (Que coisa linda)
     public void addClient(Cliente c){
-        Cliente cliente = c;
+        if (c == null) {
+            return;
+        }
+
+        if (buscarClienteCPF(c.getCPF()) == null) {
+            clientes.add(c);
+        }
     }
 
     //Metodo pra remover cliente
@@ -15,8 +29,14 @@ public class Banco {
 
     //Metodo pra buscar cliente pelo CPF
     public Cliente buscarClienteCPF(String CPF){
+        for (Cliente c : clientes) {
 
-        return;
+            if (c.getCPF().equals(CPF)) {
+                return c;
+            }
+        }
+
+        return null;
     }
 
     //Metodo pra buscar a conta pelo numero
