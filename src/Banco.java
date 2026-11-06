@@ -11,6 +11,14 @@ public class Banco {
         this.clientes = new ArrayList<>();
     }
 
+    public String getNome() {
+        return nome;
+    }
+
+    public ArrayList<Cliente> getClientes() {
+        return clientes;
+    }
+
     // Metodo pra add cliente
     //Ele adiciona clientes a bancos, usando outro metodo como condição para saber se tal cliente/CPF tem "cadastro" (Que coisa linda)
     public void addClient(Cliente c){

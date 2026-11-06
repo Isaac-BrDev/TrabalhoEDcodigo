@@ -1,51 +1,25 @@
-import java.time.LocalDate;
+import java.io.IOException;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        Banco banco = new Banco("Banco Digital");
+        try {
 
-        Cliente cliente = new Cliente(
-                "11122233344",
-                "Francisca Almeida"
-        );
+            Banco banco = LeitorDeArquivo.carregarBanco("dados/banco.txt");
 
-        Conta corrente = new Conta(
-                "1001",
-                TipoConta.CORRENTE,
-                1000.00
-        );
+            System.out.println("Banco carregado com sucesso!");
 
-        Conta poupanca = new Conta(
-                "1002",
-                TipoConta.POUPANCA,
-                2000.00
-        );
+            GeradorRelatorio.gerarRelatorioClientes(banco, "saidas");
 
-        cliente.addConta(corrente);
-        cliente.addConta(poupanca);
+            GeradorRelatorio.gerarExtratos(banco, 9, 2026, "saidas");
 
-        banco.addClient(cliente);
+            System.out.println("Relatorios gerados com sucesso!");
 
-        // Primeiro fechamento
-        banco.fecharMes(2026, 9);
+        } catch (IOException e) {
 
-        System.out.println("Saldo da corrente: R$ "
-                + corrente.saldo());
+            System.out.println("Erro: " + e.getMessage());
 
-        System.out.println("Saldo da poupanca: R$ "
-                + poupanca.saldo());
-
-        // Segundo fechamento: não deve duplicar operações
-        banco.fecharMes(2026, 9);
-
-        System.out.println("\nDepois do segundo fechamento:");
-
-        System.out.println("Saldo da corrente: R$ "
-                + corrente.saldo());
-
-        System.out.println("Saldo da poupanca: R$ "
-                + poupanca.saldo());
+        }
     }
 }

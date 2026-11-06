@@ -3,7 +3,7 @@ import java.time.LocalDate;
 public class Transacao {
     private LocalDate data;
     private TipoTransacao tipoT;
-    private Double valor;
+    private double valor;
     private String descricao;
 
     //Construtor
@@ -18,6 +18,10 @@ public class Transacao {
 
         if (descricao == null) {
             throw new IllegalArgumentException("A descrição não pode ser nula.");
+        }
+
+        if (valor <= 0 || !Double.isFinite(valor)) {
+            throw new IllegalArgumentException("Valor inválido.");
         }
 
         this.data = data;
@@ -44,7 +48,7 @@ public class Transacao {
     }
 
     //Metodo verificar se a transacao é um credito
-    public Boolean creditoOuNao() {
+    public boolean creditoOuNao() {
         return tipoT == TipoTransacao.DEPOSITO || tipoT == TipoTransacao.PIX_RECEBIDO || tipoT == TipoTransacao.RENDIMENTO;
     }
 

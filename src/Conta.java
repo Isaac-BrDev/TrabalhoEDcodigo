@@ -36,6 +36,11 @@ public class Conta {
     //Metodo pra registrar uma transacao
     public boolean registrar(Transacao t){
 
+        //Não permite informar uma transação com valor null
+        if (t == null) {
+            return false;
+        }
+
         //verifica se a lista de transações não está vazia
         if(!transacoes.isEmpty()) {
             Transacao ultima = transacoes.getLast();
@@ -79,6 +84,11 @@ public class Conta {
 
     //Metodo pra calcular o saldo em determinada data
     public double saldoEm(LocalDate data){
+
+        if(data == null){
+            throw new IllegalArgumentException("A data não pode ser nula.");
+        }
+
         double saldoCalculado = saldoInicial;
 
         for (Transacao transacao : transacoes) {

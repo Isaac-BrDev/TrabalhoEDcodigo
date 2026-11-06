@@ -25,10 +25,21 @@ public class Cliente {
     }
     //Metodo que adiciona uma conta a determinado cliente
     //Ele recebe o objeto "c" que vai ser adicionado, colocado no arraylisy "contas", o if verifica se o objeto c não é null
-    public void addConta(Conta c){
-        if (c != null) {
-            contas.add(c);
+    public void addConta(Conta c) {
+
+        if (c == null) {
+            return;
         }
+
+        //Percorre a lista de contas para verificar se não existe uma conta com o mesmo número da informada no método
+        for (Conta conta : contas) {
+
+            if (conta.getNumero().equals(c.getNumero())) {
+                return;
+            }
+        }
+
+        contas.add(c);
     }
 
     //Metodo que remove a conta do cliente
