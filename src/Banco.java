@@ -3,8 +3,10 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 
 public class Banco {
+
     private String nome;
     private ArrayList<Cliente> clientes;
+
 
     public Banco(String nome) {
         this.nome = nome;
@@ -48,11 +50,18 @@ public class Banco {
         clientes.add(posicao, c);
     }
 
-    //Metodo pra remover cliente
-    public void removerClient(Cliente c){
-        if (c != null && c.getContas().isEmpty()) {
-            clientes.remove(c);
+    // eu troquei esse metodo
+
+
+
+
+    public boolean removerClient(Cliente c) {
+
+        if (c == null || !c.getContas().isEmpty()) {
+            return false;
         }
+
+        return clientes.remove(c);
     }
 
     //Metodo pra buscar cliente pelo CPF
