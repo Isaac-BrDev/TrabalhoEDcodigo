@@ -18,9 +18,26 @@ public class Banco {
             return;
         }
 
-        if (buscarClienteCPF(c.getCPF()) == null) {
-            clientes.add(c);
+        if (buscarClienteCPF(c.getCPF()) !=null) {
+            return;
         }
+        // Verifica se alguma conta já pertence a outro cliente
+        for (Conta novaConta : c.getContas()) {
+
+            if (buscarConta(novaConta.getNumero()) != null) {
+                return;
+            }
+        }
+
+        // Inserção ordenada pelo nome
+        int posicao = 0;
+
+        while (posicao < clientes.size() && clientes.get(posicao).getNome().compareToIgnoreCase(c.getNome()) < 0) {
+
+            posicao++;
+        }
+
+        clientes.add(posicao, c);
     }
 
     //Metodo pra remover cliente
@@ -63,6 +80,13 @@ public class Banco {
         if (origem == destino || valor <= 0) {
             return false;
         }
+
+        // Verifica se as duas contas pertencem a este banco
+        if (buscarConta(origem.getNumero()) != origem
+                || buscarConta(destino.getNumero()) != destino) {
+            return false;
+        }
+
         //Cria a saída do tipo Transação e saída, colocando os valores, tipo, e etc
         Transacao saida = new Transacao(data, TipoTransacao.PIX_ENVIADO, valor, "PIX enviado");
         if (!origem.registrar(saida)) {
@@ -78,14 +102,77 @@ public class Banco {
     }
 
     //Metodo pra fechar o mes, aplicando as tarifas e os rendimentos
-    public void fecharMes(int ano, int mes){
+
+    public void fecharMes(int ano, int mes) {
+
         YearMonth periodo = YearMonth.of(ano, mes);
+
         LocalDate data = periodo.atEndOfMonth();
+
         for (Cliente cliente : clientes) {
+
             for (Conta conta : cliente.getContas()) {
-                // Aplicação das regras do mês
+
+                boolean fechamentoRealizado = false;
+
+                // Verifica se já existe tarifa ou rendimento no mês
+                for (Transacao t : conta.getTransacoes()) {
+
+                    YearMonth mesTransacao =
+                            YearMonth.from(t.getData());
+
+                    if (mesTransacao.equals(periodo)
+                            && (t.getTipo() == TipoTransacao.TARIFA
+                            || t.getTipo() == TipoTransacao.RENDIMENTO)) {
+
+                        fechamentoRealizado = true;
+                        break;
+                    }
+                }
+
+                // Evita duplicar o fechamento
+                if (fechamentoRealizado) {
+                    continue;
+                }
+
+                if (conta.getTipo() == TipoConta.CORRENTE) {
+
+                    // Tarifa mensal de R$ 15,00
+                    Transacao tarifa = new Transacao(
+                            data,
+                            TipoTransacao.TARIFA,
+                            15.00,
+                            "Tarifa mensal"
+                    );
+
+                    conta.registrar(tarifa);
+
+                } else if (conta.getTipo() == TipoConta.POUPANCA) {
+
+                    // Calcula o saldo no último dia do mês
+                    double saldo = conta.saldoEm(data);
+
+                    if (saldo > 0) {
+
+                        // Rendimento de 0,5%, arredondado para duas casas
+                        double rendimento =
+                                Math.round(saldo * 0.005 * 100.0) / 100.0;
+
+                        if (rendimento > 0) {
+
+                            Transacao rendimentoMensal = new Transacao(
+                                    data,
+                                    TipoTransacao.RENDIMENTO,
+                                    rendimento,
+                                    "Rendimento mensal"
+                            );
+
+                            conta.registrar(rendimentoMensal);
+                        }
+                    }
+                }
             }
         }
-
     }
+
 }

@@ -4,19 +4,48 @@ public class Main {
 
     public static void main(String[] args) {
 
-        Transacao transacao = new Transacao(
-                LocalDate.of(2026, 9, 1),
-                TipoTransacao.DEPOSITO,
-                1200.00,
-                "Salario"
+        Banco banco = new Banco("Banco Digital");
+
+        Cliente cliente = new Cliente(
+                "11122233344",
+                "Francisca Almeida"
         );
 
-        System.out.println("Tipo: " + transacao.getTipo());
+        Conta corrente = new Conta(
+                "1001",
+                TipoConta.CORRENTE,
+                1000.00
+        );
 
-        System.out.println("Valor: " + transacao.getValor());
+        Conta poupanca = new Conta(
+                "1002",
+                TipoConta.POUPANCA,
+                2000.00
+        );
 
-        System.out.println("Descricao: " + transacao.getDescricao());
+        cliente.addConta(corrente);
+        cliente.addConta(poupanca);
 
-        System.out.println("É crédito? " + transacao.creditoOuNao());
+        banco.addClient(cliente);
+
+        // Primeiro fechamento
+        banco.fecharMes(2026, 9);
+
+        System.out.println("Saldo da corrente: R$ "
+                + corrente.saldo());
+
+        System.out.println("Saldo da poupanca: R$ "
+                + poupanca.saldo());
+
+        // Segundo fechamento: não deve duplicar operações
+        banco.fecharMes(2026, 9);
+
+        System.out.println("\nDepois do segundo fechamento:");
+
+        System.out.println("Saldo da corrente: R$ "
+                + corrente.saldo());
+
+        System.out.println("Saldo da poupanca: R$ "
+                + poupanca.saldo());
     }
 }

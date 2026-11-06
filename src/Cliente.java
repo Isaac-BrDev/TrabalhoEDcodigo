@@ -24,8 +24,7 @@ public class Cliente {
         this.contas = new ArrayList<>();
     }
     //Metodo que adiciona uma conta a determinado cliente
-    //Ele recebe o objeto "c" que vai ser adicionado, colocado no arraylisy "contas", o null serve para
-    //Que não exista a possibilidade de colocar um objeto null.
+    //Ele recebe o objeto "c" que vai ser adicionado, colocado no arraylisy "contas", o if verifica se o objeto c não é null
     public void addConta(Conta c){
         if (c != null) {
             contas.add(c);

@@ -31,6 +31,8 @@ public class Conta {
         return saldoInicial;
     }
 
+    public LinkedList<Transacao> getTransacoes() {return transacoes;}
+
     //Metodo pra registrar uma transacao
     public boolean registrar(Transacao t){
 
@@ -157,7 +159,7 @@ public class Conta {
 
                 resultado.append(String.format(
                         Locale.US,
-                        "%s %-18s %-20s %10.2f R$ %.2f%n",
+                        "%s %-18s %-20s %+10.2f R$ %.2f%n",
                         data.format(formatoData),
                         transacao.getTipo(),
                         transacao.getDescricao(),
