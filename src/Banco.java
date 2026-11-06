@@ -123,38 +123,41 @@ public class Banco {
     public void fecharMes(int ano, int mes) {
 
         YearMonth periodo = YearMonth.of(ano, mes);
-
         LocalDate data = periodo.atEndOfMonth();
 
         for (Cliente cliente : clientes) {
 
             for (Conta conta : cliente.getContas()) {
 
+                TipoTransacao tipoFechamento;
+
+                if (conta.getTipo() == TipoConta.CORRENTE) {
+                    tipoFechamento = TipoTransacao.TARIFA;
+                } else {
+                    tipoFechamento = TipoTransacao.RENDIMENTO;
+                }
+
                 boolean fechamentoRealizado = false;
 
-                // Verifica se já existe tarifa ou rendimento no mês
+                // Verifica se o fechamento já foi realizado
                 for (Transacao t : conta.getTransacoes()) {
 
-                    YearMonth mesTransacao =
-                            YearMonth.from(t.getData());
+                    YearMonth mesTransacao = YearMonth.from(t.getData());
 
                     if (mesTransacao.equals(periodo)
-                            && (t.getTipo() == TipoTransacao.TARIFA
-                            || t.getTipo() == TipoTransacao.RENDIMENTO)) {
+                            && t.getTipo() == tipoFechamento) {
 
                         fechamentoRealizado = true;
                         break;
                     }
                 }
 
-                // Evita duplicar o fechamento
                 if (fechamentoRealizado) {
                     continue;
                 }
 
                 if (conta.getTipo() == TipoConta.CORRENTE) {
 
-                    // Tarifa mensal de R$ 15,00
                     Transacao tarifa = new Transacao(
                             data,
                             TipoTransacao.TARIFA,
@@ -162,16 +165,19 @@ public class Banco {
                             "Tarifa mensal"
                     );
 
-                    conta.registrar(tarifa);
+                    if (!conta.registrar(tarifa)) {
+                        System.out.println(
+                                "Não foi possível aplicar tarifa na conta "
+                                        + conta.getNumero()
+                        );
+                    }
 
                 } else if (conta.getTipo() == TipoConta.POUPANCA) {
 
-                    // Calcula o saldo no último dia do mês
                     double saldo = conta.saldoEm(data);
 
                     if (saldo > 0) {
 
-                        // Rendimento de 0,5%, arredondado para duas casas
                         double rendimento =
                                 Math.round(saldo * 0.005 * 100.0) / 100.0;
 
@@ -184,7 +190,12 @@ public class Banco {
                                     "Rendimento mensal"
                             );
 
-                            conta.registrar(rendimentoMensal);
+                            if (!conta.registrar(rendimentoMensal)) {
+                                System.out.println(
+                                        "Não foi possível aplicar rendimento na conta "
+                                                + conta.getNumero()
+                                );
+                            }
                         }
                     }
                 }

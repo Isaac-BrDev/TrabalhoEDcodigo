@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;  //quando o texto não pode ser convertido para uma data
 import java.time.format.ResolverStyle;  //exige uma data realmente válida, tipo 31/02/2026
+import java.io.IOException;
 
 
 public class Main {
@@ -82,35 +83,91 @@ public class Main {
         } while (opcao != 3);
     }
 
-    public static void menuRelatorios(Scanner sc) {
+
+    public static void menuRelatorios(Scanner sc, Banco banco) {
 
         int opcao;
 
         do {
 
             System.out.println("\n========== RELATORIOS ==========");
-            System.out.println("1 - Relatorio de clientes");
-            System.out.println("2 - Relatorio de contas");
-            System.out.println("3 - Relatorio de transacoes");
-            System.out.println("4 - Voltar");
+            System.out.println("1 - Gerar relatorio de clientes");
+            System.out.println("2 - Gerar extratos mensais");
+            System.out.println("3 - Voltar");
 
             opcao = lerInteiro(sc, "Escolha uma opcao: ");
 
             switch (opcao) {
 
                 case 1:
-                    System.out.println("Relatorio de clientes: aguardando integracao da RC8.");
+
+                    try {
+
+                        GeradorRelatorio.gerarRelatorioClientes(
+                                banco,
+                                "saidas"
+                        );
+
+                        System.out.println(
+                                "Relatorio de clientes gerado com sucesso!"
+                        );
+
+                        System.out.println(
+                                "Arquivo: saidas/clientes.txt"
+                        );
+
+                    } catch (IOException e) {
+
+                        System.out.println(
+                                "Erro ao gerar relatorio: " + e.getMessage()
+                        );
+                    }
+
                     break;
 
                 case 2:
-                    System.out.println("Relatorio de contas: aguardando integracao da RC8.");
+
+                    int mes = lerInteiro(sc, "Digite o mes (1 a 12): ");
+
+                    if (mes < 1 || mes > 12) {
+                        System.out.println("ERRO: Mes invalido!");
+                        break;
+                    }
+
+                    int ano = lerInteiro(sc, "Digite o ano: ");
+
+                    if (ano < 1 || ano > 9999) {
+                        System.out.println("ERRO: Ano invalido!");
+                        break;
+                    }
+
+                    try {
+
+                        GeradorRelatorio.gerarExtratos(
+                                banco,
+                                mes,
+                                ano,
+                                "saidas"
+                        );
+
+                        System.out.println(
+                                "Extratos gerados com sucesso!"
+                        );
+
+                        System.out.println(
+                                "Verifique a pasta saidas."
+                        );
+
+                    } catch (IOException e) {
+
+                        System.out.println(
+                                "Erro ao gerar extratos: " + e.getMessage()
+                        );
+                    }
+
                     break;
 
                 case 3:
-                    System.out.println("Relatorio de transacoes: aguardando integracao da RC8.");
-                    break;
-
-                case 4:
                     System.out.println("Voltando ao menu principal...");
                     break;
 
@@ -118,13 +175,30 @@ public class Main {
                     System.out.println("ERRO: Opcao inexistente!");
             }
 
-        } while (opcao != 4);
+        } while (opcao != 3);
     }
+
+
 
     public static void salvarDados(Banco banco) {
 
-        System.out.println("Integracao com o sistema de salvamento pendente.");
+        try {
+
+            EscritorDeArquivo.salvarBanco(
+                    banco,
+                    "dados/banco.txt"
+            );
+
+            System.out.println("\nDados salvos com sucesso!");
+
+        } catch (IOException e) {
+
+            System.out.println("\nErro ao salvar os dados:");
+            System.out.println(e.getMessage());
+
+        }
     }
+
 
 
     public static void consultarExtrato(Scanner sc, Banco banco) {
@@ -185,6 +259,39 @@ public class Main {
             System.out.println("Operacao cancelada.");
         }
     }
+
+    public static void listarContasNegativas(Banco banco) {
+
+        boolean encontrou = false;
+
+        for (Cliente cliente : banco.getClientes()) {
+
+            for (Conta conta : cliente.getContas()) {
+
+                if (conta.saldo() < 0) {
+
+                    System.out.println("\n------------------------------");
+                    System.out.println("TITULAR: " + cliente.getNome());
+                    System.out.println("CPF: " + cliente.getCPF());
+                    System.out.println("CONTA: " + conta.getNumero());
+                    System.out.println("TIPO: " + conta.getTipo());
+
+                    System.out.printf(
+                            Locale.US,
+                            "SALDO: R$ %.2f%n",
+                            conta.saldo()
+                    );
+
+                    encontrou = true;
+                }
+            }
+        }
+
+        if (!encontrou) {
+            System.out.println("\nNenhuma conta com saldo negativo.");
+        }
+    }
+
     public static void realizarTransferencia(Scanner sc, Banco banco) {
 
         System.out.println("\n========== TRANSFERENCIA PIX ==========");
@@ -885,13 +992,34 @@ public static void detalharCliente(Scanner sc, Banco banco) {
             }
         }
     }
+
     public static void main(String[] args) {
 
         Locale.setDefault(Locale.US);
 
         Scanner sc = new Scanner(System.in);
 
-        Banco banco = new Banco("Banco");
+        Banco banco;
+
+        // Carrega os dados do arquivo
+        try {
+
+            banco = LeitorDeArquivo.carregarBanco("dados/grande.txt");
+
+            System.out.println("==============================================");
+            System.out.println("       BANCO CARREGADO COM SUCESSO!");
+            System.out.println("==============================================");
+            System.out.println("Banco: " + banco.getNome());
+            System.out.println("Clientes cadastrados: " + banco.getClientes().size());
+
+        } catch (IOException e) {
+
+            System.out.println("ERRO AO CARREGAR O BANCO!");
+            System.out.println(e.getMessage());
+
+            sc.close();
+            return;
+        }
 
         int opcao;
 
@@ -910,8 +1038,9 @@ public static void detalharCliente(Scanner sc, Banco banco) {
             System.out.println("7  - Buscar por CPF ou numero da conta");
             System.out.println("8  - Operacoes bancarias");
             System.out.println("9  - Gerar relatorios");
-            System.out.println("10 - Salvar dados");
-            System.out.println("11 - Sair");
+            System.out.println("10 - Listar contas com saldo negativo");
+            System.out.println("11 - Salvar dados");
+            System.out.println("12 - Sair");
 
             System.out.println("----------------------------------------------");
 
@@ -952,14 +1081,18 @@ public static void detalharCliente(Scanner sc, Banco banco) {
                     break;
 
                 case 9:
-                    menuRelatorios(sc);
+                    menuRelatorios(sc, banco);
                     break;
 
                 case 10:
-                    salvarDados(banco);
+                    listarContasNegativas(banco);
                     break;
 
                 case 11:
+                    salvarDados(banco);
+                    break;
+
+                case 12:
 
                     if (confirmar(sc, "Deseja salvar os dados antes de sair?")) {
                         salvarDados(banco);
@@ -974,8 +1107,9 @@ public static void detalharCliente(Scanner sc, Banco banco) {
                     System.out.println("ERRO: Opcao inexistente!");
             }
 
-        } while (opcao != 11);
+        } while (opcao != 12);
 
         sc.close();
     }
+
 }
